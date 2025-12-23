@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lions Club Adventskalender Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 50%, #1a472a 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .snowflakes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .snowflake { position: absolute; top: -10px; color: #fff; font-size: 1rem; opacity: 0.8; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
+        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 3rem; margin-bottom: 10px; }
+        h1 { font-size: 2rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        .subtitle { font-size: 1.1rem; opacity: 0.9; color: #ffd700; }
+        .checker-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .input-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        input[type="text"] {
+            flex: 1; padding: 18px 25px; font-size: 1.2rem; border: none; border-radius: 50px;
+            background: rgba(255,255,255,0.95); color: #333; font-family: 'Poppins', sans-serif;
+            outline: none; transition: box-shadow 0.3s;
+        }
+        input[type="text"]:focus { box-shadow: 0 0 0 3px rgba(255,215,0,0.5); }
+        input[type="text"]::placeholder { color: #999; }
+        button {
+            padding: 18px 35px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 50px;
+            background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%); color: #fff;
+            cursor: pointer; transition: all 0.3s; font-family: 'Poppins', sans-serif; white-space: nowrap;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(196,30,58,0.4); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .spinner {
+            display: inline-block; width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff;
+            animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results { margin-top: 30px; display: none; }
+        .results.show { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-winner {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+            color: #1a472a; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px;
+        }
+        .result-winner h2 { font-size: 1.8rem; margin-bottom: 10px; }
+        .result-winner .emoji { font-size: 3rem; margin-bottom: 15px; }
+        .result-loser {
+            background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;
+            text-align: center; margin-bottom: 25px;
+        }
+        .result-loser h2 { font-size: 1.5rem; margin-bottom: 10px; }
+        .result-loser .emoji { font-size: 2.5rem; margin-bottom: 15px; }
+        .info-box { background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; margin-bottom: 20px; }
+        .info-box h3 { color: #ffd700; margin-bottom: 15px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .info-box p, .info-box li { line-height: 1.8; opacity: 0.95; }
+        .info-box ul { list-style: none; padding-left: 0; }
+        .info-box li::before { content: "•"; color: #ffd700; margin-right: 10px; }
+        .info-box.warning { background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.3); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center; }
+        .stat-card .number { font-size: 2rem; font-weight: 700; color: #ffd700; }
+        .stat-card .label { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        .winning-numbers { max-height: 300px; overflow-y: auto; padding-right: 10px; }
+        .winning-numbers::-webkit-scrollbar { width: 8px; }
+        .winning-numbers::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .winning-numbers::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        .day-row { margin-bottom: 15px; }
+        .day-row h4 { color: #ffd700; margin-bottom: 8px; font-size: 1rem; }
+        .number-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .number-tag { background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .number-tag.highlight { background: #ffd700; color: #1a472a; font-weight: 600; }
+        footer { text-align: center; margin-top: 40px; opacity: 0.7; font-size: 0.9rem; }
+        footer a { color: #ffd700; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .error-message { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.4); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        @media (max-width: 600px) {
+            .input-group { flex-direction: column; }
+            button { width: 100%; }
+            h1 { font-size: 1.5rem; }
+            .checker-card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+<div class="snowflakes" id="snowflakes"></div>
+<div class="container">
+    <header>
+        <div class="logo">🦁🎄</div>
+        <h1>Lions Club Schwenningen</h1>
+        <p class="subtitle">Adventskalender 2025 - Gewinnprüfung</p>
+    </header>
+    <div class="checker-card">
+        <form id="checkerForm">
+            <div class="input-group">
+                <input type="text" id="numberInput" placeholder="Deine Kalendernummer eingeben..." pattern="[0-9]*" inputmode="numeric" maxlength="6" required>
+                <button type="submit" id="checkButton">Prüfen 🎁</button>
+            </div>
+        </form>
+        <div class="results" id="results"></div>
+    </div>
+    <footer>
+        <p>🔗 <a href="https://adventskalender-vs.de/" target="_blank">adventskalender-vs.de</a></p>
+        <p style="margin-top: 10px;">Lions Club Schwenningen © 2025</p>
+    </footer>
+</div>
+<script>
+    function createSnowflakes() {
+        const container = document.getElementById('snowflakes');
+        const chars = ['❄', '❅', '❆', '✦', '✧'];
+        for (let i = 0; i < 50; i++) {
+            const s = document.createElement('div');
+            s.className = 'snowflake';
+            s.textContent = chars[Math.floor(Math.random() * chars.length)];
+            s.style.left = Math.random() * 100 + '%';
+            s.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            s.style.animationDelay = Math.random() * 5 + 's';
+            s.style.fontSize = (Math.random() * 0.8 + 0.5) + 'rem';
+            s.style.opacity = Math.random() * 0.6 + 0.2;
+            container.appendChild(s);
+        }
+    }
+    createSnowflakes();
+
+    const form = document.getElementById('checkerForm');
+    const input = document.getElementById('numberInput');
+    const button = document.getElementById('checkButton');
+    const resultsDiv = document.getElementById('results');
+
+    input.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ''); });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const number = input.value.trim();
+        if (!number) return;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span>Prüfe...';
+        resultsDiv.classList.remove('show');
+        try {
+            const response = await fetch(`/api/check?number=${encodeURIComponent(number)}`);
+            const data = await response.json();
+            if (data.error) showError(data.error);
+            else showResults(data);
+        } catch (error) {
+            showError('Verbindungsfehler. Bitte versuche es erneut.');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = 'Prüfen 🎁';
+        }
+    });
+
+    function showError(message) {
+        resultsDiv.innerHTML = `<div class="error-message"><p>❌ ${message}</p></div>`;
+        resultsDiv.classList.add('show');
+    }
+
+    function showResults(data) {
+        let html = '';
+        if (data.isWinner) {
+            html += `<div class="result-winner"><div class="emoji">🎉🎄🎁</div><h2>HERZLICHEN GLÜCKWUNSCH!</h2><p>Deine Nummer <strong>${data.number}</strong> hat gewonnen!</p><p>Gewonnen am: <strong>Tag ${data.winningDays.join(', Tag ')}</strong></p></div>
+                <div class="info-box warning"><h3>📍 Gewinnabholung</h3><p><strong>Lions Clubraum</strong><br>Alte Herdstraße 22<br>78054 VS-Schwenningen</p></div>
+                <div class="info-box"><h3>📅 Abholtermine</h3><ul><li>13. Dezember 2025</li><li>20. Dezember 2025</li><li>27. Dezember 2025</li><li>3. Januar 2026</li><li>10. Januar 2026</li><li>17. Januar 2026 ⚠️ <strong>LETZTER TAG!</strong></li></ul><p style="margin-top: 15px;"><strong>🕐 Uhrzeit:</strong> 8:30 - 13:00 Uhr</p><p style="margin-top: 10px;">⚠️ <strong>WICHTIG:</strong> Bring deinen Kalender mit der Gewinnnummer mit!</p></div>`;
+        } else {
+            html += `<div class="result-loser"><div class="emoji">🎄</div><h2>Leider kein Gewinn</h2><p>Deine Nummer <strong>${data.number}</strong> ist nicht unter den bisherigen Gewinnzahlen.</p><p style="margin-top: 15px;">💡 Täglich werden neue Gewinner gezogen! Schau morgen wieder vorbei.</p></div>`;
+        }
+        html += `<div class="stats-grid"><div class="stat-card"><div class="number">${data.totalDaysDrawn}</div><div class="label">Tage gezogen</div></div><div class="stat-card"><div class="number">${data.totalWinners}</div><div class="label">Gewinner gesamt</div></div></div>`;
+        if (data.allResults && Object.keys(data.allResults).length > 0) {
+            html += `<div class="info-box"><h3>🎯 Alle Gewinnzahlen</h3><div class="winning-numbers">`;
+            const sortedDays = Object.keys(data.allResults).sort((a, b) => parseInt(a) - parseInt(b));
+            for (const day of sortedDays) {
+                const numbers = data.allResults[day].numbers;
+                html += `<div class="day-row"><h4>Tag ${day} (${numbers.length} Gewinner)</h4><div class="number-tags">`;
+                for (const num of numbers) {
+                    html += `<span class="number-tag${num === data.number ? ' highlight' : ''}">${num}</span>`;
+                }
+                html += `</div></div>`;
+            }
+            html += `</div></div>`;
+        }
+        resultsDiv.innerHTML = html;
+        resultsDiv.classList.add('show');
+    }
+</script>
+</body>
+</html>
