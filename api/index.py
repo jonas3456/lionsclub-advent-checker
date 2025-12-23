@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 
@@ -51,7 +51,7 @@ def fetch_winning_numbers_cached():
     cache_data = {
         'winning_numbers': winning_numbers,
         'days_info': days_info,
-        'cached_at': datetime.utcnow().isoformat()
+        'cached_at': datetime.now(timezone.utc).isoformat()
     }
 
     # Store in cache
@@ -194,6 +194,8 @@ def check():
 
     if not number or not number.isdigit():
         return jsonify({'error': 'Invalid number'}), 400
+
+    number = str(int(number))
 
     cache_data = fetch_winning_numbers_cached()
 
