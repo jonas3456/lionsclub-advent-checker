@@ -65,3 +65,6 @@ def check():
         'totalWinners': len(winning_numbers),
         'allResults': days_info
     })
+
+# This is required for Vercel
+app = app
