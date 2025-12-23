@@ -116,7 +116,7 @@
     </div>
     <footer>
         <p>🔗 <a href="https://adventskalender-vs.de/" target="_blank">adventskalender-vs.de</a></p>
-        <p style="margin-top: 10px;">Lions Club Schwenningen © 2025</p>
+        <p style="margin-top: 10px;"><a href="https://github.com/jonas3456/lionsclub-advent-checker" target="_blank">Github Repo</a></p>
     </footer>
 </div>
 <script>
@@ -171,30 +171,122 @@
 
     function showResults(data) {
         let html = '';
+
         if (data.isWinner) {
-            html += `<div class="result-winner"><div class="emoji">🎉🎄🎁</div><h2>HERZLICHEN GLÜCKWUNSCH!</h2><p>Deine Nummer <strong>${data.number}</strong> hat gewonnen!</p><p>Gewonnen am: <strong>Tag ${data.winningDays.join(', Tag ')}</strong></p></div>
-                <div class="info-box warning"><h3>📍 Gewinnabholung</h3><p><strong>Lions Clubraum</strong><br>Alte Herdstraße 22<br>78054 VS-Schwenningen</p></div>
-                <div class="info-box"><h3>📅 Abholtermine</h3><ul><li>13. Dezember 2025</li><li>20. Dezember 2025</li><li>27. Dezember 2025</li><li>3. Januar 2026</li><li>10. Januar 2026</li><li>17. Januar 2026 ⚠️ <strong>LETZTER TAG!</strong></li></ul><p style="margin-top: 15px;"><strong>🕐 Uhrzeit:</strong> 8:30 - 13:00 Uhr</p><p style="margin-top: 10px;">⚠️ <strong>WICHTIG:</strong> Bring deinen Kalender mit der Gewinnnummer mit!</p></div>`;
+            html += `
+            <div class="result-winner">
+                <div class="emoji">🎉🎄🎁</div>
+                <h2>HERZLICHEN GLÜCKWUNSCH!</h2>
+                <p>Deine Nummer <strong>${data.number}</strong> hat gewonnen!</p>
+                <p>Gewonnen am: <strong>Tag ${data.winningDays.join(', Tag ')}</strong></p>
+            </div>
+        `;
+
+            // Show prize details if available
+            if (data.prizeDetails && data.prizeDetails.length > 0) {
+                html += `
+                <div class="info-box" style="background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,215,0,0.1));">
+                    <h3>🎁 Dein Gewinn</h3>
+            `;
+                for (const prize of data.prizeDetails) {
+                    html += `
+                    <div style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px;">🏆 ${prize.prize}</p>
+                        <p><strong>Wert:</strong> ${prize.value}</p>
+                        <p><strong>Sponsor:</strong> ${prize.sponsor}</p>
+                        <p style="opacity: 0.7; font-size: 0.9rem;">Tag ${prize.day}</p>
+                    </div>
+                `;
+                }
+                html += `</div>`;
+            }
+
+            html += `
+            <div class="info-box warning">
+                <h3>📍 Gewinnabholung</h3>
+                <p><strong>Lions Clubraum</strong><br>
+                Alte Herdstraße 22<br>
+                78054 VS-Schwenningen</p>
+            </div>
+
+            <div class="info-box">
+                <h3>📅 Abholtermine</h3>
+                <ul>
+                    <li>13. Dezember 2025</li>
+                    <li>20. Dezember 2025</li>
+                    <li>27. Dezember 2025</li>
+                    <li>3. Januar 2026</li>
+                    <li>10. Januar 2026</li>
+                    <li>17. Januar 2026 ⚠️ <strong>LETZTER TAG!</strong></li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>🕐 Uhrzeit:</strong> 8:30 - 13:00 Uhr</p>
+                <p style="margin-top: 10px;">⚠️ <strong>WICHTIG:</strong> Bring deinen Kalender mit der Gewinnnummer mit!</p>
+            </div>
+        `;
         } else {
-            html += `<div class="result-loser"><div class="emoji">🎄</div><h2>Leider kein Gewinn</h2><p>Deine Nummer <strong>${data.number}</strong> ist nicht unter den bisherigen Gewinnzahlen.</p><p style="margin-top: 15px;">💡 Täglich werden neue Gewinner gezogen! Schau morgen wieder vorbei.</p></div>`;
+            html += `
+            <div class="result-loser">
+                <div class="emoji">🎄</div>
+                <h2>Leider kein Gewinn</h2>
+                <p>Deine Nummer <strong>${data.number}</strong> ist nicht unter den bisherigen Gewinnzahlen.</p>
+                <p style="margin-top: 15px;">💡 Täglich werden neue Gewinner gezogen! Schau morgen wieder vorbei.</p>
+            </div>
+        `;
         }
-        html += `<div class="stats-grid"><div class="stat-card"><div class="number">${data.totalDaysDrawn}</div><div class="label">Tage gezogen</div></div><div class="stat-card"><div class="number">${data.totalWinners}</div><div class="label">Gewinner gesamt</div></div></div>`;
+
+        // Stats and all numbers (same as before)
+        html += `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">${data.totalDaysDrawn}</div>
+                <div class="label">Tage gezogen</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${data.totalWinners}</div>
+                <div class="label">Gewinner gesamt</div>
+            </div>
+        </div>
+    `;
+
+        // All winning numbers section (keep the rest as before)
         if (data.allResults && Object.keys(data.allResults).length > 0) {
-            html += `<div class="info-box"><h3>🎯 Alle Gewinnzahlen</h3><div class="winning-numbers">`;
+            html += `
+            <div class="info-box">
+                <h3>🎯 Alle Gewinnzahlen</h3>
+                <div class="winning-numbers">
+        `;
+
             const sortedDays = Object.keys(data.allResults).sort((a, b) => parseInt(a) - parseInt(b));
+
             for (const day of sortedDays) {
                 const numbers = data.allResults[day].numbers;
-                html += `<div class="day-row"><h4>Tag ${day} (${numbers.length} Gewinner)</h4><div class="number-tags">`;
+                html += `
+                <div class="day-row">
+                    <h4>Tag ${day} (${numbers.length} Gewinner)</h4>
+                    <div class="number-tags">
+            `;
+
                 for (const num of numbers) {
-                    html += `<span class="number-tag${num === data.number ? ' highlight' : ''}">${num}</span>`;
+                    const isHighlight = num === data.number;
+                    html += `<span class="number-tag${isHighlight ? ' highlight' : ''}">${num}</span>`;
                 }
-                html += `</div></div>`;
+
+                html += `
+                    </div>
+                </div>
+            `;
             }
-            html += `</div></div>`;
+
+            html += `
+                </div>
+            </div>
+        `;
         }
+
         resultsDiv.innerHTML = html;
         resultsDiv.classList.add('show');
     }
+
 </script>
 </body>
 </html>
