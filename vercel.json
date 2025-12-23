@@ -1,7 +1,10 @@
 {
-  "functions": {
-    "api/*.py": {
-      "runtime": "python3.9"
-    }
-  }
+  "buildCommand": "",
+  "outputDirectory": "public",
+
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ]
+
+
 }
