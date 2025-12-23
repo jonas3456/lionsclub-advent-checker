@@ -19,8 +19,8 @@ def get_redis():
         print(f"Redis connection error: {e}")
         return None
 
-# Cache TTL in seconds (10 minutes)
-CACHE_TTL = 600
+# Cache TTL in seconds (1 hour)
+CACHE_TTL = 3600
 
 
 def fetch_winning_numbers_cached():
@@ -33,7 +33,7 @@ def fetch_winning_numbers_cached():
         try:
             cached = redis.get(cache_key)
             if cached:
-                print("✅ Cache HIT")
+                print("✅ Cache HIT for numbers")
                 # Upstash returns dict directly, no need to json.loads
                 if isinstance(cached, str):
                     return json.loads(cached)
@@ -42,7 +42,7 @@ def fetch_winning_numbers_cached():
             print(f"Redis read error: {e}")
 
     # Cache miss - fetch from origin
-    print("❌ Cache MISS - fetching from origin")
+    print("❌ Cache MISS for numbers- fetching from origin")
     winning_numbers, days_info = fetch_winning_numbers_from_origin()
 
     if winning_numbers is None:
@@ -106,7 +106,7 @@ def fetch_winning_numbers_from_origin():
 
 def get_prize_info_cached(window_class, session):
     """Fetch prize info with caching"""
-    cache_key = f"prizes_{window_class}"
+    cache_key = f"prices_{window_class}"
     redis = get_redis()
 
     # Try cache first
@@ -115,6 +115,7 @@ def get_prize_info_cached(window_class, session):
             cached = redis.get(cache_key)
             if cached:
                 if isinstance(cached, str):
+                    print(f"✅ Cache HIT for prices_{window_class}")
                     return json.loads(cached)
                 return cached
         except:
@@ -122,11 +123,13 @@ def get_prize_info_cached(window_class, session):
 
     # Fetch from origin
     prizes = get_prize_info_from_origin(window_class, session)
+    print(f"❌ Cache MISS for prices_{window_class} - fetching from origin")
 
     # Cache prizes for 1 hour (they don't change)
     if prizes and redis:
         try:
-            redis.set(cache_key, json.dumps(prizes), ex=3600)
+            redis.set(cache_key, json.dumps(prizes), ex=CACHE_TTL)
+            print(f"💾 Stored in prices_{window_class} cache (TTL={CACHE_TTL}s)")
         except:
             pass
 
@@ -140,6 +143,7 @@ def get_prize_info_from_origin(window_class, session):
     body = f"action=check_access&target={window_class}"
     headers = {
         "Accept": "*/*",
+        "Accept-Language": "en-GB,en;q=0.9,de-DE;q=0.8,de;q=0.7,en-US;q=0.6",
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "Origin": "https://adventskalender-vs.de",
         "Referer": "https://adventskalender-vs.de/",
