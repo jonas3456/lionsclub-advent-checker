@@ -141,7 +141,7 @@ def init_all_prize_caches():
             prizes = get_prize_info_from_origin(window_class, session)
             if prizes:
                 cache_key = f"prices_{window_class}"
-                set_cached_data(cache_key, prizes)
+                set_cached_data(cache_key, prizes, ex=None)
                 results[day] = len(prizes)
             else:
                 results[day] = 0
