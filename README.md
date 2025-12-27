@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![License](https://img.shields.io/badge/License-GPL--3.0-green?style=for-the-badge)
 
 A web application to check if your Lions Club Schwenningen/Villingen advent calendar number has won a prize. Features a festive UI with falling snowflakes! ❄️
 
@@ -35,7 +35,7 @@ A web application to check if your Lions Club Schwenningen/Villingen advent cale
 
 ## 🚀 Live Demo
 
-👉 **Check out the live version:** [your-app.vercel.app](https://your-app.vercel.app)
+👉 **Check out the live version:** [lionsclub-advent-checker.vercel.app](https://lionsclub-advent-checker.vercel.app/)
 
 ---
 
@@ -45,11 +45,57 @@ A web application to check if your Lions Club Schwenningen/Villingen advent cale
 |------------|---------|
 | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | Backend runtime |
 | ![Flask](https://img.shields.io/badge/Flask-000000?style=flat-square&logo=flask&logoColor=white) | Web framework |
+| ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white) | Upstash Redis for caching |
 | ![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup4-59666C?style=flat-square&logo=python&logoColor=white) | Web scraping |
+| ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white) | Hosting & serverless functions |
 | ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) | Frontend markup |
 | ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white) | Styling |
 | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) | Frontend logic |
-| ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white) | Hosting & serverless functions |
+
+---
+
+## ⚙️ Configuration
+
+The application requires several environment variables to function correctly, especially for caching and administrative tasks.
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `UPSTASH_REDIS_REST_URL` | Your Upstash Redis REST URL | Yes |
+| `UPSTASH_REDIS_REST_TOKEN` | Your Upstash Redis REST Token | Yes |
+| `ADMIN_SECRET_TOKEN` | A secret token used to protect administrative endpoints | Yes |
+
+---
+
+## 🔌 API Endpoints
+
+### Public Endpoints
+
+#### `GET /api/check?number=<YOUR_NUMBER>`
+Checks if a specific calendar number has won a prize.
+- **Parameters:** `number` (string/int)
+- **Response:** JSON with winning status, days, and prize details.
+
+### Protected Endpoints
+*Requires authentication via `X-API-KEY` header or `token` query parameter.*
+
+#### `GET /api/cache-status`
+Returns the current status of the Redis cache, including the last update timestamp.
+
+#### `GET /api/init-cache`
+Manually triggers a fresh scrape of the winning numbers and updates the cache.
+
+#### `GET /api/init-prize-cache`
+Iterates through all winning days and pre-caches the detailed prize information (fetched via AJAX).
+
+---
+
+## 🚀 Deployment (Vercel)
+
+1. **Push to GitHub**: Connect your repository to Vercel.
+2. **Set Environment Variables**: Add the `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `ADMIN_SECRET_TOKEN` in the Vercel Project Settings.
+3. **Deploy**: Vercel will automatically detect the `vercel.json` and deploy the Flask app as a serverless function.
 
 ---
 
