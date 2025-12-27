@@ -44,16 +44,17 @@ def fetch_winning_numbers_from_origin():
         print(f"Origin fetch error: {e}")
         return None, None
 
-def fetch_winning_numbers_cached():
+def fetch_winning_numbers_cached(force_refresh=False):
     """Fetch winning numbers with caching"""
     cache_key = "advent_data"
     
-    cached = get_cached_data(cache_key)
-    if cached:
-        print("✅ Cache HIT for numbers")
-        return cached
+    if not force_refresh:
+        cached = get_cached_data(cache_key)
+        if cached:
+            print("✅ Cache HIT for numbers")
+            return cached
 
-    print("❌ Cache MISS for numbers - fetching from origin")
+    print(f"{'🔄 Forcing refresh' if force_refresh else '❌ Cache MISS'} for numbers - fetching from origin")
     winning_numbers, days_info = fetch_winning_numbers_from_origin()
 
     if winning_numbers is None:
@@ -120,6 +121,32 @@ def get_prize_info_from_origin(window_class, session=None):
     except Exception as e:
         print(f"Prize fetch error: {e}")
         return None
+
+def init_all_prize_caches():
+    """Fetches and caches prize info for all available days"""
+    cache_data = fetch_winning_numbers_cached()
+    if not cache_data:
+        return None
+
+    days_info = cache_data.get('days_info', {})
+    results = {}
+    session = requests.Session()
+
+    for day, info in days_info.items():
+        window_class = info.get('window_class')
+        if window_class:
+            # force_refresh=True logic isn't explicitly in get_prize_info_cached yet,
+            # but we can just call it to ensure it's in cache.
+            # If we want to force refresh it, we might need to modify get_prize_info_cached.
+            prizes = get_prize_info_from_origin(window_class, session)
+            if prizes:
+                cache_key = f"prices_{window_class}"
+                set_cached_data(cache_key, prizes)
+                results[day] = len(prizes)
+            else:
+                results[day] = 0
+    
+    return results
 
 def get_prize_info_cached(window_class, session=None):
     """Fetch prize info with caching"""
