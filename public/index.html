@@ -96,6 +96,7 @@
         .info-box p, .info-box li { line-height: 1.8; opacity: 0.95; }
         .info-box ul { list-style: none; padding-left: 0; }
         .info-box li::before { content: "•"; color: #ffd700; margin-right: 10px; }
+        .info-box a { color: #ffd700; text-decoration: underline; }
         .info-box.warning { background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.3); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center; }
@@ -128,7 +129,7 @@
     <header>
         <div class="logo">🦁🎄</div>
         <h1>Lions Club Schwenningen</h1>
-        <p class="subtitle">Adventskalender 2025 - Gewinnprüfung</p>
+        <p class="subtitle">Adventskalender <span id="seasonYear">2026</span> - Gewinnprüfung</p>
     </header>
     <div class="checker-card">
         <form id="checkerForm">
@@ -161,6 +162,10 @@
         }
     }
     createSnowflakes();
+
+    // Season year: the calendar runs Dec–Jan, so January still belongs to last year's season
+    const now = new Date();
+    document.getElementById('seasonYear').textContent = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
 
     const form = document.getElementById('checkerForm');
     const input = document.getElementById('numberInput');
@@ -229,22 +234,15 @@
             html += `
             <div class="info-box warning">
                 <h3>📍 Gewinnabholung</h3>
-                <p><strong>Lions Clubraum</strong><br>
-                Alte Herdstraße 22<br>
-                78054 VS-Schwenningen</p>
+                <p>Den Abholort findest du in den offiziellen
+                <a href="https://adventskalender-vs.de/teilnahmebedingungen/" target="_blank" rel="noopener">Teilnahmebedingungen</a>.</p>
             </div>
 
             <div class="info-box">
                 <h3>📅 Abholtermine</h3>
-                <ul>
-                    <li>13. Dezember 2025</li>
-                    <li>20. Dezember 2025</li>
-                    <li>27. Dezember 2025</li>
-                    <li>3. Januar 2026</li>
-                    <li>10. Januar 2026</li>
-                    <li>17. Januar 2026 ⚠️ <strong>LETZTER TAG!</strong></li>
-                </ul>
-                <p style="margin-top: 15px;"><strong>🕐 Uhrzeit:</strong> 8:30 - 13:00 Uhr</p>
+                <p>Die aktuellen Abholtermine und Uhrzeiten findest du in den offiziellen
+                <a href="https://adventskalender-vs.de/teilnahmebedingungen/" target="_blank" rel="noopener">Teilnahmebedingungen</a>.
+                Nach dem letzten Termin verfallen die Gewinne!</p>
                 <p style="margin-top: 10px;">⚠️ <strong>WICHTIG:</strong> Bring deinen Kalender mit der Gewinnnummer mit!</p>
             </div>
         `;
