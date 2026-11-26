@@ -1,0 +1,5 @@
+.vercel
+.env*.local
+.codegraph
+.idea/
+__pycache__/

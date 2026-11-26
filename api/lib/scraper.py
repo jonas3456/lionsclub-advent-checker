@@ -7,6 +7,15 @@ from .cache import get_cached_data, set_cached_data
 BASE_URL = "https://adventskalender-vs.de/"
 AJAX_URL = f"{BASE_URL}wp-admin/admin-ajax.php"
 
+
+def prize_cache_key(window_class):
+    """Prize cache key, scoped to the current year.
+
+    Prize entries never expire and window classes (window-1..24) repeat every
+    season, so without the year last season's prizes would be served again.
+    """
+    return f"prices_{datetime.now(timezone.utc).year}_{window_class}"
+
 def fetch_winning_numbers_from_origin():
     """Fetch winning numbers directly from the website"""
     try:
@@ -77,6 +86,8 @@ def get_prize_info_from_origin(window_class, session=None):
     body = f"action=check_access&target={window_class}"
     headers = {
         "Accept": "*/*",
+        # Required: the site answers admin-ajax requests without an
+        # Accept-Language header with "404 Not Found". Do not remove.
         "Accept-Language": "en-GB,en;q=0.9,de-DE;q=0.8,de;q=0.7,en-US;q=0.6",
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "Origin": BASE_URL.rstrip('/'),
@@ -88,7 +99,12 @@ def get_prize_info_from_origin(window_class, session=None):
     try:
         response = session.post(AJAX_URL, data=body, headers=headers, timeout=10)
 
-        if response.status_code != 200 or not response.text:
+        if response.status_code != 200:
+            print(f"Prize fetch for {window_class} failed: HTTP {response.status_code} {response.text[:80]!r}")
+            return None
+
+        if not response.text:
+            # Empty body (or "false" below) means the window is still locked
             return None
 
         text = response.text.strip()
@@ -135,13 +151,10 @@ def init_all_prize_caches():
     for day, info in days_info.items():
         window_class = info.get('window_class')
         if window_class:
-            # force_refresh=True logic isn't explicitly in get_prize_info_cached yet,
-            # but we can just call it to ensure it's in cache.
-            # If we want to force refresh it, we might need to modify get_prize_info_cached.
+            # Always fetch from origin so this endpoint also refreshes stale entries
             prizes = get_prize_info_from_origin(window_class, session)
             if prizes:
-                cache_key = f"prices_{window_class}"
-                set_cached_data(cache_key, prizes, ex=None)
+                set_cached_data(prize_cache_key(window_class), prizes, ex=None)
                 results[day] = len(prizes)
             else:
                 results[day] = 0
@@ -150,18 +163,19 @@ def init_all_prize_caches():
 
 def get_prize_info_cached(window_class, session=None):
     """Fetch prize info with caching"""
-    cache_key = f"prices_{window_class}"
-    
+    cache_key = prize_cache_key(window_class)
+
     cached = get_cached_data(cache_key)
     if cached:
-        print(f"✅ Cache HIT for prices_{window_class}")
+        print(f"✅ Cache HIT for {cache_key}")
         return cached
 
+    print(f"❌ Cache MISS for {cache_key} - fetching from origin")
     prizes = get_prize_info_from_origin(window_class, session)
-    print(f"❌ Cache MISS for prices_{window_class} - fetching from origin")
 
     if prizes:
-        set_cached_data(cache_key, prizes, ex=None) # Use default TTL or specify
+        # No expiry: a drawn day's prizes never change, and the key is year-scoped
+        set_cached_data(cache_key, prizes, ex=None)
         
     return prizes
 
